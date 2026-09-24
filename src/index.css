@@ -1,0 +1,43 @@
+@import 'reactflow/dist/style.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-100 text-slate-900 font-sans antialiased overflow-x-hidden;
+}
+
+/* High Motion Animated Glowing Background Pulse */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s infinite ease-in-out;
+}
+
+/* Floating Graphic Keyframes */
+@keyframes floatVisual {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-float {
+  animation: floatVisual 5s ease-in-out infinite;
+}
+
+/* Universal Button Motion Hover Effects */
+button {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px -5px rgba(37, 99, 235, 0.3);
+}
+
+button:active {
+  transform: translateY(0px) scale(0.98);
+}
