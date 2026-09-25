@@ -25,6 +25,34 @@ Developed for high-stakes clinical environments, MEDTRACE combines **Isolation F
 * **AI Engine:** Google Gemini API (`gemini-3-flash-preview`)
 * **Build Tooling:** Vite
 
+## Backend API
+
+The repository now includes an Express + TypeScript API in `server/` with Prisma-backed SQLite persistence. It provides JWT authentication, bcrypt password hashing, RBAC, immutable SHA-256 alert hashes, containment actions, downloadable dossiers, analytics, and Socket.io threat events.
+
+### Local setup
+
+1. Copy `.env.example` to `.env` and replace `JWT_SECRET` with a long random value.
+2. Install dependencies: `npm install`
+3. Create the database: `npm run db:push`
+4. Seed demo users and one alert: `npm run db:seed`
+5. Start the API: `npm run dev:server`
+6. Start the Vite frontend in a second terminal: `npm run dev`
+
+The Vite proxy forwards `/api` and `/socket.io` to `http://localhost:4000`. The seeded demo credentials are `admin@medtrace.com` / `admin123` and `doctor.iyer@hospital.org` / `docpass2026`; change them before any non-demo deployment.
+
+### API summary
+
+All endpoints except login require `Authorization: Bearer <JWT>`.
+
+* `POST /api/auth/login`
+* `GET /api/alerts?severity=Critical|High|Medium`
+* `POST /api/alerts/simulate`
+* `POST /api/containment/lock-account` (Security Admin)
+* `POST /api/containment/kill-session` (Security Admin)
+* `GET /api/reports/hacker-dossier/:id?format=txt|json` (Security Admin)
+* `GET /api/analytics/trends`
+* `GET /health`
+
 ---
 
 ## 🚀 Getting Started

@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SECURITY_ADMIN
+  HOSPITAL_STAFF
+}
+
+enum Severity {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum AlertStatus {
+  Uninvestigated
+  Under_Review
+  Mitigated
+  Acknowledged
+}
+
+model User {
+  id           String   @id @default(cuid())
+  employeeId   String   @unique
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  department   String?
+  isLocked     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  alerts       Alert[]
+  auditEvents  AuditEvent[]
+}
+
+model Alert {
+  id             String      @id
+  timestamp      DateTime
+  actorId        String
+  actor          User        @relation(fields: [actorId], references: [id])
+  doctorName     String
+  doctorId       String
+  department     String
+  action         String
+  severity       Severity
+  status         AlertStatus @default(Uninvestigated)
+  patientId      String
+  description    String
+  recordsAccessed Int
+  ipAddress      String
+  location       String
+  accessedModule String
+  deviceInfo     String
+  hash           String
+  createdAt      DateTime    @default(now())
+  auditEvents    AuditEvent[]
+  @@index([severity, timestamp])
+}
+
+model AuditEvent {
+  id          String   @id @default(cuid())
+  type        String
+  payload     String
+  hash        String
+  createdAt   DateTime @default(now())
+  actorId     String?
+  actor       User?    @relation(fields: [actorId], references: [id])
+  alertId     String?
+  alert       Alert?   @relation(fields: [alertId], references: [id])
+  @@index([createdAt])
+}
+
+model ContainmentAction {
+  id         String   @id @default(cuid())
+  action     String
+  targetId   String
+  requestedBy String
+  details    String?
+  createdAt  DateTime @default(now())
+}

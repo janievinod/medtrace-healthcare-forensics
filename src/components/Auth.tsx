@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Mail, ArrowRight, UserCheck, KeyRound } from 'lucide-react';
 import { User } from '../types';
+import { apiLogin } from '../services/api';
 
 interface AuthProps {
   onLoginSuccess: (user: User) => void;
@@ -10,25 +11,10 @@ export const AuthScreen: React.FC<AuthProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('admin@medtrace.com');
   const [password, setPassword] = useState('admin123');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.includes('admin')) {
-      onLoginSuccess({
-        id: 'SEC-101',
-        name: 'Chief Information Security Officer',
-        email,
-        role: 'Security Administrator',
-        department: 'Cybersecurity Operations Center'
-      });
-    } else {
-      onLoginSuccess({
-        id: 'DOC-204',
-        name: 'Dr. Ravi Iyer',
-        email,
-        role: 'Hospital User',
-        department: 'Cardiology'
-      });
-    }
+    try { onLoginSuccess(await apiLogin(email, password)); }
+    catch { window.alert('Unable to sign in. Check your credentials and API availability.'); }
   };
 
   return (

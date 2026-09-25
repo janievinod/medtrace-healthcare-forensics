@@ -11,6 +11,7 @@ import { ResponseCenter } from './pages/ResponseCenter';
 import { AIReportPage } from './pages/AIReportPage';
 import { User, NotificationItem, ThreatAlert, Severity } from './types';
 import { AlertTriangle, X, ArrowRight } from 'lucide-react';
+import { apiAlerts, apiSimulate, clearApiToken, threatSocket } from './services/api';
 
 const initialMockAlerts: ThreatAlert[] = [
   {
@@ -43,6 +44,7 @@ export default function App() {
   const [activePopupAlert, setActivePopupAlert] = useState<ThreatAlert | null>(null);
 
   const handleLogout = () => {
+    clearApiToken();
     setCurrentUser(null);
     setRoute('/home');
     setDemoMode(false);
@@ -51,10 +53,30 @@ export default function App() {
     setActivePopupAlert(null);
   };
 
-  const triggerDynamicAlert = (actionName?: string, recordCount?: number, customSev?: Severity) => {
+  useEffect(() => {
+    if (!currentUser) return;
+    apiAlerts().then(setAlerts).catch(() => undefined);
+    const socket = threatSocket();
+    socket.on('threat-alert', (alert: ThreatAlert) => {
+      setAlerts(prev => [alert, ...prev.filter(existing => existing.id !== alert.id)]);
+      setActivePopupAlert(alert);
+    });
+    socket.connect();
+    return () => { socket.disconnect(); };
+  }, [currentUser]);
+
+  const triggerDynamicAlert = async (actionName?: string, recordCount?: number, customSev?: Severity) => {
     const actions = ['Bulk Data Export', 'Record Tampering Attempt', 'Privilege Misuse', 'Off-Hours EHR Scan'];
     const chosenAction = actionName || actions[Math.floor(Math.random() * actions.length)];
 
+    try {
+      const newAlert = await apiSimulate(chosenAction, recordCount || Math.floor(100 + Math.random() * 400), customSev || 'Critical');
+      setAlerts(prev => [newAlert, ...prev.filter(existing => existing.id !== newAlert.id)]);
+      setActivePopupAlert(newAlert);
+      return;
+    } catch {
+      // Keep the demo UI functional when the API is offline.
+    }
     const newAlert: ThreatAlert = {
       id: `ALT-${Math.floor(2000 + Math.random() * 8000)}`,
       timestamp: new Date().toLocaleTimeString(),
